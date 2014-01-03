@@ -28,26 +28,23 @@ GtkWidget *indicator_menu;
 
 GtkWidget *net_down_item;
 GtkWidget *net_up_item;
+GtkWidget *net_total_item;
 GtkWidget *quit_item;
 
 gchar* format_net_label(int data)
 {
     gchar *string;
-    if(data < 1000)
+    if(data < 1000000)
     {
-        string = g_strdup_printf("%7d B/s", data);
-    }
-    else if(data < 1000000)
-    {
-        string = g_strdup_printf("%4.1f KiB/s", data/1000.0);
+        string = g_strdup_printf("%6.3f KiB/s", data/1000.0);
     }
     else if(data < 1000000000)
     {
-        string = g_strdup_printf("%3.2f MiB/s", data/1000000.0);
+        string = g_strdup_printf("%6.3f MiB/s", data/1000000.0);
     }
     else
     {
-        string = g_strdup_printf("%3.2f GiB/s", data/1000000000.0);
+        string = g_strdup_printf("%6.3f GiB/s", data/1000000000.0);
     }
     return string;
 }
@@ -99,8 +96,9 @@ gboolean update(AppIndicator* indicator)
     int net_up = net_traffic[1];
     int net_total = net_down + net_up;
 
-    gchar *indicator_label = format_net_label(net_total);
-    gchar *label_guide = "Net: 10000.00 GiB/s"; /* I wish... */
+    //gchar *indicator_label = format_net_label(net_total);
+    gchar *indicator_label = g_strdup_printf("↓ %s  ↑ %s", format_net_label(net_down), format_net_label(net_up));
+    gchar *label_guide = "Net: ↓ 100.000 GiB/s  ↑ 100.000 GiB/s"; /* I wish... */
     app_indicator_set_label(indicator, indicator_label, label_guide);
     g_free(indicator_label);
 
@@ -111,6 +109,10 @@ gboolean update(AppIndicator* indicator)
     gchar *net_up_label = format_net_label(net_up);
     gtk_menu_item_set_label(GTK_MENU_ITEM(net_up_item), net_up_label);
     g_free(net_up_label);
+
+    gchar *net_total_label = format_net_label(net_total);
+    gtk_menu_item_set_label(GTK_MENU_ITEM(net_total_item), net_total_label);
+    g_free(net_total_label);
 
     if (net_down && net_up)
     {
@@ -150,6 +152,12 @@ int main (int argc, char **argv)
     gtk_image_menu_item_set_always_show_image(GTK_IMAGE_MENU_ITEM(net_up_item), TRUE);
     gtk_menu_shell_append(GTK_MENU_SHELL(indicator_menu), net_up_item);
 
+    net_total_item = gtk_image_menu_item_new_with_label("");
+    GtkWidget *net_total_icon = gtk_image_new_from_icon_name("network-transmit-receive", GTK_ICON_SIZE_MENU);
+    gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(net_total_item), net_total_icon);
+    gtk_image_menu_item_set_always_show_image(GTK_IMAGE_MENU_ITEM(net_total_item), TRUE);
+    gtk_menu_shell_append(GTK_MENU_SHELL(indicator_menu), net_total_item);
+
     GtkWidget *sep = gtk_separator_menu_item_new();
     gtk_menu_shell_append(GTK_MENU_SHELL(indicator_menu), sep);
 
@@ -163,6 +171,7 @@ int main (int argc, char **argv)
     app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
     app_indicator_set_label(indicator, "netspeed", "netspeed");
     app_indicator_set_menu(indicator, GTK_MENU (indicator_menu));
+    // app_indicator_set_ordering_index(indicator, 999);
 
     update(indicator);
 
