@@ -35,15 +35,19 @@ gchar* format_net_label(int data)
     gchar *string;
     if(data < 1000)
     {
-        string = g_strdup_printf("%d B/s", data);
+        string = g_strdup_printf("%7d B/s", data);
     }
     else if(data < 1000000)
     {
-        string = g_strdup_printf("%.1f KiB/s", data/1000.0);
+        string = g_strdup_printf("%4.1f KiB/s", data/1000.0);
+    }
+    else if(data < 1000000000)
+    {
+        string = g_strdup_printf("%3.2f MiB/s", data/1000000.0);
     }
     else
     {
-        string = g_strdup_printf("%.2f MiB/s", data/1000000.0);
+        string = g_strdup_printf("%3.2f GiB/s", data/1000000000.0);
     }
     return string;
 }
@@ -58,9 +62,9 @@ void get_net(int traffic[2])
     int bytes_in = 0;
     int bytes_out = 0;
     int i = 0;
-    
+
     gchar **interfaces = glibtop_get_netlist(&netlist);
-    
+
     for(i = 0; i < netlist.number; i++)
     {
         if (strcmp("lo", interfaces[i]) == 0)
@@ -71,8 +75,8 @@ void get_net(int traffic[2])
         bytes_in += netload.bytes_in;
         bytes_out += netload.bytes_out;
     }
-    g_strfreev(interfaces);    
-    
+    g_strfreev(interfaces);
+
     if(first_run)
     {
         bytes_in_old = bytes_in;
@@ -82,21 +86,21 @@ void get_net(int traffic[2])
 
     traffic[0] = (bytes_in - bytes_in_old) / period;
     traffic[1] = (bytes_out - bytes_out_old) / period;
-    
+
     bytes_in_old = bytes_in;
     bytes_out_old = bytes_out;
 }
 
-gboolean update()
+gboolean update(AppIndicator* indicator)
 {
     int net_traffic[2] = {0, 0};
     get_net(net_traffic);
     int net_down = net_traffic[0];
-    int net_up = net_traffic[1];  
+    int net_up = net_traffic[1];
     int net_total = net_down + net_up;
-    
+
     gchar *indicator_label = format_net_label(net_total);
-    gchar *label_guide = "Net: 10000.00 MiB/s"; /* I wish... */
+    gchar *label_guide = "Net: 10000.00 GiB/s"; /* I wish... */
     app_indicator_set_label(indicator, indicator_label, label_guide);
     g_free(indicator_label);
 
@@ -107,7 +111,24 @@ gboolean update()
     gchar *net_up_label = format_net_label(net_up);
     gtk_menu_item_set_label(GTK_MENU_ITEM(net_up_item), net_up_label);
     g_free(net_up_label);
-    
+
+    if (net_down && net_up)
+    {
+        app_indicator_set_icon(indicator, "network-transmit-receive");
+    }
+    else if (net_down)
+    {
+        app_indicator_set_icon(indicator, "network-receive");
+    }
+    else if (net_up)
+    {
+        app_indicator_set_icon(indicator, "network-transmit");
+    }
+    else
+    { // See https://bugs.launchpad.net/ubuntu/+source/humanity-icon-theme/+bug/611336
+        app_indicator_set_icon(indicator, "network-idle");
+    }
+
     return TRUE;
 }
 
@@ -116,7 +137,7 @@ int main (int argc, char **argv)
     gtk_init (&argc, &argv);
 
     indicator_menu = gtk_menu_new();
-       
+
     net_down_item = gtk_image_menu_item_new_with_label("");
     GtkWidget *net_down_icon = gtk_image_new_from_icon_name("network-receive", GTK_ICON_SIZE_MENU);
     gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(net_down_item), net_down_icon);
@@ -138,15 +159,15 @@ int main (int argc, char **argv)
 
     gtk_widget_show_all(indicator_menu);
 
-    indicator = app_indicator_new ("netspeed", "network-transmit-receive", APP_INDICATOR_CATEGORY_SYSTEM_SERVICES);
+    indicator = app_indicator_new ("netspeed", "network-idle", APP_INDICATOR_CATEGORY_SYSTEM_SERVICES);
     app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
     app_indicator_set_label(indicator, "netspeed", "netspeed");
     app_indicator_set_menu(indicator, GTK_MENU (indicator_menu));
- 
-    update();
-    
+
+    update(indicator);
+
     /* update period in milliseconds */
-    g_timeout_add(1000*period, update, NULL);
+    g_timeout_add(1000*period, (GSourceFunc)update, (gpointer)indicator);
 
     gtk_main ();
 
