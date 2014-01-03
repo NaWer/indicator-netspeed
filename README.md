@@ -26,6 +26,7 @@ It's not packaged, so installation procedure is very inconvenient.
 
 Network-idle icon is a link to network-transmit-receive icon (see https://bugs.launchpad.net/ubuntu/+source/humanity-icon-theme/+bug/611336).
 You can use network-idle.svg (Ubuntu Ambiance theme):
+sudo rm /usr/share/icons/ubuntu-mono-dark/status/22/network-idle.svg
 sudo cp network-idle.svg /usr/share/icons/ubuntu-mono-dark/status/22/
 
 
