@@ -36,15 +36,15 @@ gchar* format_net_label(int data)
     gchar *string;
     if(data < 1000000)
     {
-        string = g_strdup_printf("%6.3f KiB/s", data/1000.0);
+        string = g_strdup_printf("%5.2f KiB/s", data/1000.0);
     }
     else if(data < 1000000000)
     {
-        string = g_strdup_printf("%6.3f MiB/s", data/1000000.0);
+        string = g_strdup_printf("%5.2f MiB/s", data/1000000.0);
     }
     else
     {
-        string = g_strdup_printf("%6.3f GiB/s", data/1000000000.0);
+        string = g_strdup_printf("%5.2f GiB/s", data/1000000000.0);
     }
     return string;
 }
