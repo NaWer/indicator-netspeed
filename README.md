@@ -1,8 +1,9 @@
 Network speed indicator for Unity
 =================================
 
-Simple fork with both up and down
 ![](https://raw.github.com/NaWer/indicator-netspeed/master/screenshot.png)
+
+Simple fork with both up and down
 
 Usage
 -----
