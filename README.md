@@ -36,10 +36,10 @@ Bugs
 * On Ubuntu 12.04 : Network-idle icon is a link to network-transmit-receive icon 
   * See https://bugs.launchpad.net/ubuntu/+source/humanity-icon-theme/+bug/611336).
   * You can use network-idle.svg (Ubuntu Ambiance theme) :
-    ```
+```
         sudo rm /usr/share/icons/ubuntu-mono-dark/status/22/network-idle.svg
         sudo cp network-idle.svg /usr/share/icons/ubuntu-mono-dark/status/22/
-    ```
+```
 
 Credits
 -------
