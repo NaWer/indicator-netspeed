@@ -193,8 +193,8 @@ gboolean update() {
     int net_up = net_traffic[1];
     int net_total = net_down + net_up;
 
-    gchar *indicator_label = g_strdup_printf("↓ %s  ↑ %s", format_net_label(net_down, true), format_net_label(net_up, true));
-    gchar *label_guide = "↓ 10000.00 MiB/s  ↑ 10000.00 MiB/s";   //maximum length label text, doesn't really work atm
+    gchar *indicator_label = g_strdup_printf("↓%s  ↑%s", format_net_label(net_down, true), format_net_label(net_up, true));
+    gchar *label_guide = "↓100.00 MiB/s  ↑100.00 MiB/s";   //maximum length label text, doesn't really work atm
     app_indicator_set_label(indicator, indicator_label, label_guide);
     g_free(indicator_label);
 
